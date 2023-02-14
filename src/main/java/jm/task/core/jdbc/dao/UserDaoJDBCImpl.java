@@ -21,10 +21,18 @@ public class UserDaoJDBCImpl implements UserDao {
                 + "name VARCHAR(255) NOT NULL, "
                 + "lastName VARCHAR(255) NOT NULL, "
                 + "age TINYINT UNSIGNED)";
-        try (Statement statement = Util.getConnection().createStatement()) {
+        try (Statement statement = connect.createStatement()) {
             statement.execute(createTable);
+            connect.commit();
+
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                connect.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+
 
         }
     }
@@ -32,23 +40,37 @@ public class UserDaoJDBCImpl implements UserDao {
     public void dropUsersTable() { // Удаление таблицы User(ов)
         String SQL = "DROP TABLE IF EXISTS users";
         try (Statement statement = connect.createStatement()) {
+            connect.setAutoCommit(false);
             statement.executeUpdate(SQL);
+            connect.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                connect.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
     public void saveUser(String name, String lastName, byte age) { // Добавление User в таблицу
 
         String insertIntoTable = "INSERT INTO users(name, lastName, age) VALUES (?, ?, ?)";
-        try (PreparedStatement preparedStatement = Util.getConnection().prepareStatement(insertIntoTable)) {
+        try (PreparedStatement preparedStatement = connect.prepareStatement(insertIntoTable)) {
             preparedStatement.setString(1, name);
             preparedStatement.setString(2, lastName);
             preparedStatement.setByte(3, age);
             preparedStatement.executeUpdate();
+            connect.commit();
+
 
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                connect.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
 
         }
     }
@@ -58,8 +80,14 @@ public class UserDaoJDBCImpl implements UserDao {
         try (PreparedStatement preparedStatement = connect.prepareStatement(SQL)) {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
+            connect.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                connect.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
 
     }
@@ -85,8 +113,14 @@ public class UserDaoJDBCImpl implements UserDao {
         String SQL = "TRUNCATE TABLE users";
         try (Statement statement = connect.createStatement()) {
             statement.executeUpdate(SQL);
+            connect.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            try {
+                connect.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
 
     }
