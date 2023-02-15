@@ -1,5 +1,10 @@
 package jm.task.core.jdbc.util;
 
+import com.mysql.cj.Session;
+import jm.task.core.jdbc.model.User;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
 import java.sql.*;
 
 public class Util {
@@ -22,6 +27,16 @@ public class Util {
             throw new RuntimeException(e);
         }
         return connection;
+
+
+    }
+    public static SessionFactory getSession() {
+
+        SessionFactory sessionFactory = new Configuration()
+                .addAnnotatedClass(User.class)
+                .buildSessionFactory();
+
+        return sessionFactory;
 
     }
 }

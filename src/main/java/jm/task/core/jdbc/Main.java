@@ -11,8 +11,6 @@ public class Main {
         UserService userService = new UserServiceImpl();
 
         userService.createUsersTable();
-
-
         userService.saveUser("Иван", "Петров", (byte) 37);
         userService.saveUser("Лев", "Толстой", (byte) 23);
         userService.saveUser("Ильф", "Петров", (byte) 18);
