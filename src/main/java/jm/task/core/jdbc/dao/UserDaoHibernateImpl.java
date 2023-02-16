@@ -4,12 +4,14 @@ import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+
 
 import java.util.List;
 
 public class UserDaoHibernateImpl implements UserDao {
     private static final SessionFactory sessionFact = Util.getSession();
-    public static User user;
+    private static Transaction transaction;
 
     public UserDaoHibernateImpl() {
 
@@ -18,39 +20,52 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void createUsersTable() {
-        try (Session session = sessionFact.getCurrentSession()) {
-            session.beginTransaction();
+            try (Session session = sessionFact.openSession()) {
+            transaction = session.beginTransaction();
             session.createSQLQuery("CREATE TABLE IF NOT EXISTS users("
                     + "id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY , "
                     + "name VARCHAR(255) NOT NULL, "
                     + "lastName VARCHAR(255) NOT NULL, "
                     + "age TINYINT UNSIGNED)").executeUpdate();
 
-            session.getTransaction().commit();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+
+
         }
-
-
     }
 
     @Override
     public void dropUsersTable() {
         try (Session session = sessionFact.openSession()) {
-            session.beginTransaction();
+            transaction = session.beginTransaction();
             session.createSQLQuery("DROP TABLE IF EXISTS users").executeUpdate();
-            session.getTransaction().commit();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
 
         }
-
     }
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
 
-        try (Session session = sessionFact.getCurrentSession()) {
-            user = new User(name, lastName, age);
-            session.beginTransaction();
-            session.save(user);
-            session.getTransaction().commit();
+        try (Session session = sessionFact.openSession()) {
+           transaction= session.beginTransaction();
+           session.save(new User(name,lastName,age));
+           transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
         }
 
     }
@@ -58,38 +73,40 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void removeUserById(long id) {
-        try (Session session = sessionFact.getCurrentSession()) {
-            user = new User();
-            user.setId(id);
-            session.beginTransaction();
+        try (Session session = sessionFact.openSession()) {
+            User user = session.get(User.class, id);
+            transaction = session.beginTransaction();
             session.delete(user);
-            session.getTransaction().commit();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+
         }
-
     }
-
 
     @Override
     public List<User> getAllUsers() {
-        try (Session session = sessionFact.getCurrentSession()) {
-            session.beginTransaction();
-
-            List<User> users = session.createQuery("from User").getResultList();
-            for (User u : users) {
-                System.out.println(u);
-            }
-            session.getTransaction().commit();
-            return users;
+            try (Session session = sessionFact.openSession()) {
+                return  session.createQuery("FROM User").getResultList();
         }
     }
 
     @Override
     public void cleanUsersTable() {
-        try (Session session = sessionFact.getCurrentSession()) {
-            session.beginTransaction();
-            session.createSQLQuery("TRUNCATE TABLE  users").executeUpdate();
-            session.getTransaction().commit();
-        }
+        try (Session session = sessionFact.openSession()) {
+            transaction = session.beginTransaction();
+            session.createSQLQuery("DELETE FROM users").executeUpdate();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
 
+
+        }
     }
 }
