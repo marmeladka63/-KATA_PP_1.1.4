@@ -7,6 +7,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoHibernateImpl implements UserDao {
@@ -20,13 +21,16 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void createUsersTable() {
+
             try (Session session = sessionFact.openSession()) {
             transaction = session.beginTransaction();
-            session.createSQLQuery("CREATE TABLE IF NOT EXISTS users("
+            String SQL = "CREATE TABLE IF NOT EXISTS users("
                     + "id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY , "
                     + "name VARCHAR(255) NOT NULL, "
                     + "lastName VARCHAR(255) NOT NULL, "
-                    + "age TINYINT UNSIGNED)").executeUpdate();
+                    + "age TINYINT UNSIGNED)";
+
+            session.createSQLQuery(SQL).executeUpdate();
 
             transaction.commit();
         } catch (Exception e) {
@@ -43,7 +47,8 @@ public class UserDaoHibernateImpl implements UserDao {
     public void dropUsersTable() {
         try (Session session = sessionFact.openSession()) {
             transaction = session.beginTransaction();
-            session.createSQLQuery("DROP TABLE IF EXISTS users").executeUpdate();
+            String SQL = "DROP TABLE IF EXISTS users";
+            session.createSQLQuery(SQL).executeUpdate();
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
@@ -89,8 +94,10 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public List<User> getAllUsers() {
+        List <User> users = new ArrayList<>();
             try (Session session = sessionFact.openSession()) {
-                return  session.createQuery("FROM User").getResultList();
+                users = session.createQuery("FROM User").getResultList();
+                return  users;
         }
     }
 
@@ -98,7 +105,7 @@ public class UserDaoHibernateImpl implements UserDao {
     public void cleanUsersTable() {
         try (Session session = sessionFact.openSession()) {
             transaction = session.beginTransaction();
-            session.createSQLQuery("DELETE FROM users").executeUpdate();
+            session.createQuery("DELETE FROM User").executeUpdate();
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
