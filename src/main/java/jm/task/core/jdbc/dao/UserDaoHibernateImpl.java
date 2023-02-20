@@ -7,7 +7,9 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
 
-import java.util.ArrayList;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+
 import java.util.List;
 
 public class UserDaoHibernateImpl implements UserDao {
@@ -30,7 +32,8 @@ public class UserDaoHibernateImpl implements UserDao {
                     + "lastName VARCHAR(255) NOT NULL, "
                     + "age TINYINT UNSIGNED)";
 
-            session.createSQLQuery(SQL).executeUpdate();
+            Query query = session.createSQLQuery(SQL);
+            query.executeUpdate();
 
             transaction.commit();
         } catch (Exception e) {
@@ -48,7 +51,8 @@ public class UserDaoHibernateImpl implements UserDao {
         try (Session session = sessionFact.openSession()) {
             transaction = session.beginTransaction();
             String SQL = "DROP TABLE IF EXISTS users";
-            session.createSQLQuery(SQL).executeUpdate();
+            Query query =  session.createSQLQuery(SQL);
+            query.executeUpdate();
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
@@ -94,9 +98,10 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public List<User> getAllUsers() {
-        List <User> users = new ArrayList<>();
+
             try (Session session = sessionFact.openSession()) {
-                users = session.createQuery("FROM User").getResultList();
+                Query query= session.createQuery("FROM User");
+                List <User> users =  query.getResultList();
                 return  users;
         }
     }
@@ -105,7 +110,8 @@ public class UserDaoHibernateImpl implements UserDao {
     public void cleanUsersTable() {
         try (Session session = sessionFact.openSession()) {
             transaction = session.beginTransaction();
-            session.createQuery("DELETE FROM User").executeUpdate();
+            Query query = session.createQuery("DELETE FROM User");
+            query.executeUpdate();
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
